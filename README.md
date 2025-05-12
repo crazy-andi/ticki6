@@ -1,2 +1,2 @@
-# ticki6
+# Ticki6
 Simple Newsticker for KDE/Plasma6
