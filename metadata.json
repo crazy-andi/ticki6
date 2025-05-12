@@ -12,8 +12,8 @@
         "Id": "org.kde.plasma6.ticki6",
         "Name": "Ticki6",
         "Version": "0.0.1",
-        "Website": "https://www.opencode.net/crazy-andi/ticki6/",
-        "BugReportUrl": "https://www.opencode.net/crazy-andi/ticki6/"
+        "Website": "https://github.com/crazy-andi/ticki6",
+        "BugReportUrl": "https://github.com/crazy-andi/ticki6"
     },
     "X-Plasma-API-Minimum-Version": "6.0",
     "KPackageStructure": "Plasma/Applet"
