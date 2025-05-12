@@ -13,16 +13,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.7
-import QtQuick 2.15 as QtQuick214
-import QtQuick.Layouts 1.1
-import QtQml.XmlListModel
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.15
-import org.kde.plasma.components 3.0 as PlasmaComponents
-import org.kde.plasma.plasmoid 2.0
-import org.kde.plasma.core 2.0 as PlasmaCore
-import org.kde.plasma.plasma5support as Plasma5Support
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import org.kde.plasma.plasmoid
+// import org.kde.plasma.plasma5support as Plasma5Support
 
 Item {
 	anchors.fill: parent
@@ -472,18 +467,19 @@ Item {
 		Qt.openUrlExternally(url); //unable to use a custom cmd...
 		//this will block. if browsercmd will not return, you cannot open another link :-( //executable.exec("'"+browsercmd+"' '"+url+"'");
 	}
-	Plasma5Support.DataSource {
-		id: executable
-		engine: "executable"
-		connectedSources: []
-		onNewData: function(source, data) {
-			disconnectSource(source)
-		}
+	// Plasma5Support.DataSource {
+	// 	id: executable
+	// 	engine: "executable"
+	// 	connectedSources: []
+	// 	onNewData: function(source, data) {
+	// 		disconnectSource(source)
+	// 	}
+	//
+	// 	function exec(cmd) {
+	// 		executable.connectSource(cmd)
+	// 	}
+	// }
 
-		function exec(cmd) {
-			executable.connectSource(cmd)
-		}
-	}
 	Timer {
 		id: flickTimer
 		interval: flickInterval
@@ -669,6 +665,18 @@ Item {
 				}
 			}
 		}
+		WheelHandler {
+			//property: "rotation"
+			onWheel: (event)=> {
+				//console.log("rotation", event.angleDelta.y, "scaled", rotation, "@", point.position, "=>", parent.rotation)
+				rssFlickable.flick(event.angleDelta.y*10,0)
+				if (event.angleDelta.y >=0){
+					flickDirection=1
+				}else{
+					flickDirection=-1
+				}
+			}
+		}
 	} //endof Flickable
 
 	BusyIndicator {
@@ -690,17 +698,6 @@ Item {
 	}
 
 
-	QtQuick214.WheelHandler {
-		//property: "rotation"
-		onWheel: (event)=> {
-			//console.log("rotation", event.angleDelta.y, "scaled", rotation, "@", point.position, "=>", parent.rotation)
-			rssFlickable.flick(event.angleDelta.y*10,0)
-			if (event.angleDelta.y >=0){
-				flickDirection=1
-			}else{
-				flickDirection=-1
-			}
-		}
-	}
+
 }
 

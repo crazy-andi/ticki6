@@ -13,14 +13,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.0
-import QtQuick.Layouts 1.1
-import org.kde.plasma.plasmoid 2.0
-import org.kde.plasma.core 2.0 as PlasmaCore
+import QtQuick
+import QtQuick.Layouts
+import org.kde.plasma.plasmoid
+// import org.kde.plasma.core 2.0 as PlasmaCore
 
 PlasmoidItem {
 	anchors.fill: parent
-//	Plasmoid.constraintHints: PlasmaCore.Types.CanFillArea
 	Plasmoid.constraintHints: Plasmoid.CanFillArea
 	Layout.preferredWidth: 5000
 	Layout.fillWidth: true
