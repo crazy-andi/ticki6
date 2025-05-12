@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+	<kcfgfile name=""/>
+	
+	<group name="General">
+		<entry name="scrollSpeed" type="Int"> <default>50</default> </entry>
+		<entry name="scrollWidth" type="Int"> <default>100</default> </entry>
+		
+		<entry name="feedTitleVisible" type="Bool"><default>true</default></entry>
+		<entry name="feedTitleFontSize" type="Int"><default>16</default></entry>
+		<entry name="feedTitleFontColor" type="Color"><default>#ffeeff</default></entry>
+		<entry name="feedTitleFontFamily" type="String"><default>Monospace</default></entry>
+		<entry name="feedTitleFontBold" type="Bool"><default>true</default></entry>
+		<entry name="feedTitleFontItalic" type="Bool"><default>false</default></entry>
+		
+		<entry name="feedLinkVisible" type="Bool"><default>false</default></entry>
+		<entry name="feedLinkFontSize" type="Int"><default>7</default></entry>
+		<entry name="feedLinkFontColor" type="Color"><default>#989fff</default></entry>
+		<entry name="feedLinkFontBold" type="Bool"><default>false</default></entry>
+		<entry name="feedLinkFontItalic" type="Bool"><default>false</default></entry>
+		<entry name="feedLinkFontFamily" type="String"><default>Monospace</default></entry>
+		
+		<entry name="feedDateVisible" type="Bool"><default>true</default></entry>
+		<entry name="feedDateFontSize" type="Int"><default>9</default></entry>
+		<entry name="feedDateFontColor" type="Color"><default>#9c9c9c</default></entry>
+		<entry name="feedDateFontBold" type="Bool"><default>false</default></entry>
+		<entry name="feedDateFontItalic" type="Bool"><default>false</default></entry>
+		<entry name="feedDateFontFamily" type="String"><default>Monospace</default></entry>
+		
+		<entry name="feedDescVisible" type="Bool"><default>true</default></entry>
+		<entry name="feedDescWordWrap" type="Bool"><default>true</default></entry>
+		<entry name="feedDescClip" type="Bool"><default>true</default></entry>
+		<entry name="feedDescFontSize" type="Int"><default>11</default></entry>
+		<entry name="feedDescFontColor" type="Color"><default>#c8c8c8</default></entry>
+		<entry name="feedDescFontBold" type="Bool"><default>false</default></entry>
+		<entry name="feedDescFontItalic" type="Bool"><default>false</default></entry>
+		<entry name="feedDescFontFamily" type="String"><default>Verdana</default></entry>
+		
+		<entry name="channelTitleFontSize" type="Int"><default>9</default></entry>
+		<entry name="channelTitleFontColor" type="Color"><default>#9c9c9c</default></entry>
+		<entry name="channelTitleFontFamily" type="String"><default>Monospace</default></entry>
+		<entry name="channelTitleFontBold" type="Bool"><default>false</default></entry>
+		<entry name="channelTitleFontItalic" type="Bool"><default>false</default></entry>
+		<entry name="channelTitleVisible" type="Bool"><default>true</default></entry>
+		<entry name="channelTitleWordWrap" type="Bool"><default>false</default></entry>
+		
+		<entry name="feedPadding" type="Int"><default>20</default></entry>
+		
+		<entry name="flickMarginTop" type="Int"><default>2</default></entry>
+		<entry name="flickMarginBottom" type="Int"><default>2</default></entry>
+		<entry name="flickMarginLeft" type="Int"><default>2</default></entry>
+		<entry name="flickMarginRight" type="Int"><default>2</default></entry>
+		
+		<entry name="feedRefreshInterval" type="Int"><default>900</default></entry>
+		
+		<entry name="separatorVisible" type="Bool"><default>true</default></entry>
+		<entry name="separatorWidth" type="Int"><default>2</default></entry>
+		<entry name="separatorColor" type="Color"><default>#aaaaaa</default></entry>
+	</group>
+	<group name="URLs">
+		<entry name="urlList" type="String">
+			<default>https://www.heise.de/security/feed.xml
+https://www.heise.de/rss/heise-Rubrik-IT.rdf</default>
+		</entry>
+		<entry name="browser" type="String">
+			<default>xdg-open</default>
+		</entry>
+	</group>
+	<group name="testGroup">
+		<entry name="testString" type="String">
+			<default>This is a TestString out of config file</default>
+		</entry>
+	</group>
+</kcfg>

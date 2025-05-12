@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "crazy-andi@gmx.de",
+                "Name": "crazy-andi"
+            }
+        ],
+        "Category": "Online Services",
+        "Description": "Simple Newsticker for KF6. Scrolls RSS-/Atom-Feeds in good old fashion from side to side.",
+        "Icon": "mimetype-rss",
+        "Id": "org.kde.plasma6.ticki6",
+        "Name": "Ticki6",
+        "Version": "0.0.1",
+        "Website": "https://www.opencode.net/crazy-andi/ticki6/",
+        "BugReportUrl": "https://www.opencode.net/crazy-andi/ticki6/"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "KPackageStructure": "Plasma/Applet"
+}
