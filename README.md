@@ -8,10 +8,12 @@ Simple Newsticker for your KDE/Plasma6 Panel
 - click on Feed Item opens default Browser
 
 Screenshot:
-![screenshot](preview/screenshot.png)
-Screenrecord in action:
-![screenrecord](preview/screenrecord.mp4)
 
-Screenshot(Config):
+![screenshot](preview/screenshot.png)
+
+Screenrecord in action:![screenrecord](preview/screenrecord.mp4)
+
+Screenshots (Config)
+
 ![screenshot_config1](preview/screenshot_config1.png)
 ![screenshot_config2](preview/screenshot_config2.png)
