@@ -9,7 +9,9 @@ Simple Newsticker for your KDE/Plasma6 Panel
 
 Screenshot:
 ![screenshot](preview/screenshot.png)
+Screenrecord in action:
+![screenrecord](preview/screenrecord.png)
 
 Screenshot(Config):
-![screenshot](preview/screenshot_config1.png)
-![screenshot](preview/screenshot_config2.png)
+![screenshot_config1](preview/screenshot_config1.png)
+![screenshot_config2](preview/screenshot_config2.png)
