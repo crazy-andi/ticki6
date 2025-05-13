@@ -11,7 +11,7 @@ Screenshot:
 
 ![screenshot](preview/screenshot.png)
 
-Screenrecord in action:![screenrecord](preview/screenrecord.mp4)
+Screenrecord in action: ![screenrecord](preview/screenrecord.mp4)
 
 Screenshots (Config)
 
