@@ -60,7 +60,8 @@
 	<group name="URLs">
 		<entry name="urlList" type="String">
 			<default>https://www.heise.de/security/feed.xml
-https://www.heise.de/rss/heise-Rubrik-IT.rdf</default>
+https://www.heise.de/rss/heise-Rubrik-IT.rdf
+https://rabbitresearch.substack.com/feed</default>
 		</entry>
 		<entry name="browser" type="String">
 			<default>xdg-open</default>

@@ -109,13 +109,21 @@ Item {
 		return str;
 	}
 	function validUrl(loc) {
-		console.log("FIXME: about to validate url : "+loc);
-		// FIXME
+		var pattHttp = /^http(s)?:\/\/.*/;
+		if(pattHttp.test(loc,false)){
+			console.log("looks like a http(s) url : '"+loc+"'");
+			return true;
+		}
+		var pattFile = /^file:\/\/.*/;
+		if(pattFile.test(loc,false)){
+			console.log("looks like a file url : '"+loc+"'");
+			return true;
+		}
+		console.log("FIXME: unknown url scheme : "+loc);
 		return loc != "";
 	}
 
 	function urlFix(loc) {
-		console.log("FIXME: about to fix url : "+loc);
 		// FIXME
 		return loc;
 	}
@@ -143,45 +151,95 @@ Item {
 		request.open("GET", url);
 		request.send();
 	}
+	
+	function isRss(response){
+		var contentType = response.contentType.split(";")[0];
+		console.log("         contentType: "+contentType);
+		switch(contentType){
+			case "application/rss+xml":{
+				return true;
+			}
+		}
+
+		try{
+			var xmlRoot = response.request.responseXML.documentElement;
+			switch(xmlRoot.nodeName){
+				case "rss":
+					return true;
+				default:
+					console.log("seems to be a xml, but is not a rss document : "+response.url);
+			}
+		}catch(ex){
+			console.log("failed to parse content like rss+xml");
+			console.log(ex);
+		}
+
+		return false;
+	}
+	function isAtom(response){
+		var contentType = response.contentType.split(";")[0];
+		console.log("         contentType: "+contentType);
+		switch(contentType){
+			case "application/atom+xml":{
+				return true;
+			}
+		}
+		
+		try{
+			var xmlRoot = response.request.responseXML.documentElement;
+			switch(xmlRoot.nodeName){
+				case "feed":
+					return true;
+				default:
+					console.log("seems to be a xml, but is not a atom document : "+response.url);
+			}
+		}catch(ex){
+			console.log("failed to parse content like atom+xml");
+			console.log(ex);
+		}
+		
+		return false;
+	}
 
 	function fillListModelFromFeedUrl(url,listModel) {
 		console.log( "download feedModel for "+url);
 
 		busyIndicator.visible=true;
-		sendRequest(url, function(response) {
-							let contentType = response.contentType.split(";")[0];
-							console.log("response.contentType: "+response.contentType);
-							//console.log("         contentType: "+contentType);
-							switch(contentType){
-								case "application/rss+xml":{
-									parseRssXml(response,listModel);
-									return;
-								}
-								case "application/atom+xml":{
-									parseAtomXml(response,listModel);
-									return;
-								}
-							}
-							//no usable contentType from server.
-							//checking content
-							//FIXME!
-
-
-
-							console.log("unable to parse contentType "+contentType);
-							listModel.append({
-								"channelTitle" : "unable to parse "+url,
-								"channelLink" : "unable to parse "+url,
-								"channelDesc" : "unable to parse "+url,
-								"channelTimestamp" : "unable to parse "+url,
-								"channelLang" : "unable to parse "+url,
-								"itemTitle": "unable to parse "+url,
-								"itemLink": "unable to parse "+url,
-								"itemDesc": "unable to parse "+url,
-								"itemTimestamp": "unable to parse "+url
-							});
-		});
-		busyIndicator.visible=false;
+		try{
+			sendRequest(url, function(response) {
+				let contentType = response.contentType.split(";")[0];
+				console.log("response.contentType: "+response.contentType);
+				//console.log("         contentType: "+contentType);
+				try{
+					if ( isRss(response) ) {
+						parseRssXml(response,listModel);
+						return;
+					} else if ( isAtom(response) ) {
+						parseAtomXml(response,listModel);
+						return;
+					}
+				}catch(ex){
+					console.log("failed to parse content by any method... sorry");
+					console.log(ex);
+				}
+				
+				
+				console.log("unable to parse contentType "+contentType);
+				listModel.append({
+					"channelTitle" : "unable to parse "+url,
+					"channelLink" : "unable to parse "+url,
+					"channelDesc" : "unable to parse "+url,
+					"channelTimestamp" : "unable to parse "+url,
+					"channelLang" : "unable to parse "+url,
+					"itemTitle": "unable to parse "+url,
+					"itemLink": "unable to parse "+url,
+					"itemDesc": "unable to parse "+url,
+					"itemTimestamp": "unable to parse "+url
+				});
+			});
+		}finally{
+			busyIndicator.visible=false;
+		}
 	}
 
 	function getAttributeValue(element,attributeName){
@@ -205,92 +263,96 @@ Item {
 				var feedID="?";
 				for (var feedChildIndex = 0 ; feedChildIndex < xmlRoot.childNodes.length ; feedChildIndex++){
 					var feedChild = xmlRoot.childNodes[feedChildIndex];
-					switch(feedChild.nodeName){
-						case "#text":break;
-						case "generator":break;
-						case "author":break;
-						case "rights":break;
-						case "id":
-							feedID=feedChild.childNodes[0].nodeValue;
-							console.log("  feedID : "+feedID);
-							break;
-						case "title":
-							feedTitle=feedChild.childNodes[0].nodeValue;
-							console.log("  feedTitle : "+feedTitle);
-							break;
-						case "updated":
-							feedTimestamp=feedChild.childNodes[0].nodeValue;
-							console.log("  feedTimestamp : "+feedTimestamp);
-							break;
-						case "link":
-							feedLink=getAttributeValue(feedChild,"href");
-							console.log("  feedLink : "+feedLink);
-							break;
-						case "entry":{
-							itemIndex++;
-							var entryTitle = "?";
-							var entryID = "?";
-							var entryLink = "?";
-							var entryUpdated = "?";
-							var entrySummary = "?";
-							var entryContent = "?";
-							var entryPublished = "?";
-							for (var entryChildIndex=0 ; entryChildIndex < feedChild.childNodes.length ; entryChildIndex++){
-								var entryChild = feedChild.childNodes[entryChildIndex];
-								switch(entryChild.nodeName){
-									case "#text":break;
-									case "id":break;
-									case "title":
-										entryTitle=entryChild.childNodes[0].nodeValue;
-										break;
-									case "link":
-										entryLink=getAttributeValue(entryChild,"href");
-										break;
-									case "updated":
-										entryUpdated=entryChild.childNodes[0].nodeValue;
-										break;
-									case "summary":
-										entrySummary=entryChild.childNodes[0].nodeValue;
-										break;
-									case "content":
-										entryContent=entryChild.childNodes[0].nodeValue;
-										break;
-									case "published":
-										entryPublished=entryChild.childNodes[0].nodeValue;
-										break;
-									default :
-										console.log("    unknown entry child node <"+entryChild.nodeName+">");
+					if(feedChild!=null){
+						switch(feedChild.nodeName){
+							case "#text":break;
+							case "generator":break;
+							case "author":break;
+							case "rights":break;
+							case "id":
+								feedID=feedChild.childNodes[0].nodeValue;
+								console.log("  feedID : "+feedID);
+								break;
+							case "title":
+								feedTitle=feedChild.childNodes[0].nodeValue;
+								console.log("  feedTitle : "+feedTitle);
+								break;
+							case "updated":
+								feedTimestamp=feedChild.childNodes[0].nodeValue;
+								console.log("  feedTimestamp : "+feedTimestamp);
+								break;
+							case "link":
+								feedLink=getAttributeValue(feedChild,"href");
+								console.log("  feedLink : "+feedLink);
+								break;
+							case "entry":{
+								itemIndex++;
+								var entryTitle = "?";
+								var entryID = "?";
+								var entryLink = "?";
+								var entryUpdated = "?";
+								var entrySummary = "?";
+								var entryContent = "?";
+								var entryPublished = "?";
+								for (var entryChildIndex=0 ; entryChildIndex < feedChild.childNodes.length ; entryChildIndex++){
+									var entryChild = feedChild.childNodes[entryChildIndex];
+									if(entryChild!=null){
+										switch(entryChild.nodeName){
+											case "#text":break;
+											case "id":break;
+											case "title":
+												entryTitle=entryChild.childNodes[0].nodeValue;
+												break;
+											case "link":
+												entryLink=getAttributeValue(entryChild,"href");
+												break;
+											case "updated":
+												entryUpdated=entryChild.childNodes[0].nodeValue;
+												break;
+											case "summary":
+												entrySummary=entryChild.childNodes[0].nodeValue;
+												break;
+											case "content":
+												entryContent=entryChild.childNodes[0].nodeValue;
+												break;
+											case "published":
+												entryPublished=entryChild.childNodes[0].nodeValue;
+												break;
+											default :
+												console.log("    unknown entry child node <"+entryChild.nodeName+">");
+										}
+									}
 								}
+								if(listModel.count<=itemIndex){
+									//console.log("append atom item no. "+itemIndex)
+									listModel.append({
+										"channelTitle" : feedTitle,
+										"channelLink" : feedLink,
+										"channelDesc" : "?",
+										"channelTimestamp" : feedTimestamp,
+										"channelLang" : "?",
+										"itemTitle": entryTitle,
+										"itemLink": entryLink,
+										"itemDesc": entrySummary,
+										"itemTimestamp": entryUpdated
+									});
+								}else{
+									//console.log("update atom item no. "+itemIndex);
+									listModel.setProperty(itemIndex, "channelTitle", feedTitle);
+									listModel.setProperty(itemIndex, "channelLink", feedLink);
+									listModel.setProperty(itemIndex, "channelDesc", "?");
+									listModel.setProperty(itemIndex, "channelTimestamp", feedTimestamp);
+									listModel.setProperty(itemIndex, "channelLang", "?");
+									listModel.setProperty(itemIndex, "itemTitle", entryTitle);
+									listModel.setProperty(itemIndex, "itemLink", entryLink);
+									listModel.setProperty(itemIndex, "itemDesc", entrySummary);
+									listModel.setProperty(itemIndex, "itemTimestamp", entryUpdated);
+								}
+								break;
 							}
-							if(listModel.count<=itemIndex){
-								//console.log("append atom item no. "+itemIndex)
-								listModel.append({
-									"channelTitle" : feedTitle,
-									"channelLink" : feedLink,
-									"channelDesc" : "?",
-									"channelTimestamp" : feedTimestamp,
-									"channelLang" : "?",
-									"itemTitle": entryTitle,
-									"itemLink": entryLink,
-									"itemDesc": entrySummary,
-									"itemTimestamp": entryUpdated
-								});
-							}else{
-								//console.log("update atom item no. "+itemIndex);
-								listModel.setProperty(itemIndex, "channelTitle", feedTitle);
-								listModel.setProperty(itemIndex, "channelLink", feedLink);
-								listModel.setProperty(itemIndex, "channelDesc", "?");
-								listModel.setProperty(itemIndex, "channelTimestamp", feedTimestamp);
-								listModel.setProperty(itemIndex, "channelLang", "?");
-								listModel.setProperty(itemIndex, "itemTitle", entryTitle);
-								listModel.setProperty(itemIndex, "itemLink", entryLink);
-								listModel.setProperty(itemIndex, "itemDesc", entrySummary);
-								listModel.setProperty(itemIndex, "itemTimestamp", entryUpdated);
-							}
-							break;
+										default:
+											console.log("  unknown feed child element <"+feedChild.nodeName+">");
 						}
-						default:
-							console.log("  unknown feed child element <"+feedChild.nodeName+">");
 					}
 				}
 				break;
@@ -342,89 +404,130 @@ Item {
 					console.log("  parsing channel elem "+channelIndex);
 					for (var channelChildIndex = 0 ; channelChildIndex < channelElem.childNodes.length ; channelChildIndex++) {
 						var channelChild = channelElem.childNodes[channelChildIndex];
-						switch(channelChild.nodeName){
-							case "#text":
-								//noop
-								break;
-							case "title":
-								channelTitle=channelChild.childNodes[0].nodeValue;
-								console.log("   channelTitle : "+channelTitle);
-								break;
-							case "link":
-								channelLink=channelChild.childNodes[0].nodeValue;
-								console.log("   channelLink : "+channelLink);
-								break;
-							case "description":
-								channelDesc=channelChild.childNodes[0].nodeValue;
-								console.log("   channelDesc : "+channelDesc);
-								break;
-							case "lastBuildDate":
-								channelTimestamp=channelChild.childNodes[0].nodeValue;
-								console.log("   channelTimestamp : "+channelTimestamp);
-								break;
-							case "language":
-								channelLang=channelChild.childNodes[0].nodeValue;
-								console.log("   channelLang : "+channelLang);
-								break;
-							case "item":{
-								itemIndex++;
-								var itemElem=channelChild;
-								var itemTitle="?";
-								var itemLink="?";
-								var itemDesc="?";
-								var itemTimestamp="?";
-								for(var itemChildIndex=0 ; itemChildIndex < itemElem.childNodes.length ; itemChildIndex++){
-									var itemChild=itemElem.childNodes[itemChildIndex];
-									switch(itemChild.nodeName){
-										case "#text":break;
-										case "guid":break;
-										case "encoded":break;
-										case "title":
-											itemTitle=itemChild.childNodes[0].nodeValue;
-											break;
-										case "link":
-											itemLink=itemChild.childNodes[0].nodeValue;
-											break;
-										case "description":
-											itemDesc=itemChild.childNodes[0].nodeValue;
-											break;
-										case "pubDate":
-											itemTimestamp=itemChild.childNodes[0].nodeValue;
-											break;
-										default:
-											console.log("    unknown itemChild <"+itemChild.nodeName+">");
+						if(channelChild!=null){
+							switch(channelChild.nodeName){
+								case "#text":
+								case "image":
+								case "generator":
+								case "copyright":
+								case "webMaster":
+								case "owner":
+								case "author":
+								case "email":
+								case "block":
+									//noop
+									break;
+								case "title":
+									try{
+										channelTitle=channelChild.childNodes[0].nodeValue;
+										console.log("   channelTitle : "+channelTitle);
+									}catch(ex){
+										console.log(ex);
 									}
+									break;
+								case "link":
+									try{
+										channelLink=channelChild.childNodes[0].nodeValue;
+										console.log("   channelLink : "+channelLink);
+									}catch(ex){
+										console.log(ex);
+									}
+									break;
+								case "description":
+									try{
+										channelDesc=channelChild.childNodes[0].nodeValue;
+										console.log("   channelDesc : "+channelDesc);
+									}catch(ex){
+										console.log(ex);
+									}
+									break;
+								case "lastBuildDate":
+									try{
+										channelTimestamp=channelChild.childNodes[0].nodeValue;
+										console.log("   channelTimestamp : "+channelTimestamp);
+									}catch(ex){
+										console.log(ex);
+									}
+									break;
+								case "language":
+									try{
+										channelLang=channelChild.childNodes[0].nodeValue;
+										console.log("   channelLang : "+channelLang);
+									}catch(ex){
+										console.log(ex);
+									}
+									break;
+								case "item":{
+									try{
+										itemIndex++;
+										var itemElem=channelChild;
+										var itemTitle="?";
+										var itemLink="?";
+										var itemDesc="?";
+										var itemTimestamp="?";
+										for(var itemChildIndex=0 ; itemChildIndex < itemElem.childNodes.length ; itemChildIndex++){
+											var itemChild=itemElem.childNodes[itemChildIndex];
+											if(itemChild!=null) {
+												switch(itemChild.nodeName){
+													case "#text":
+													case "guid":;
+													case "encoded":
+													case "creator":
+													case "enclosure":
+														//noop
+														break;
+													case "title":
+														itemTitle=itemChild.childNodes[0].nodeValue;
+														break;
+													case "link":
+														itemLink=itemChild.childNodes[0].nodeValue;
+														break;
+													case "description":
+														itemDesc=itemChild.childNodes[0].nodeValue;
+														break;
+													case "pubDate":
+														itemTimestamp=itemChild.childNodes[0].nodeValue;
+														break;
+													default:
+														console.log("    unknown itemChild <"+itemChild.nodeName+">");
+												}
+											}
+										}
+										//console.log("     item : "+itemLink);
+										if(listModel.count<=itemIndex){
+											//console.log("append item no. "+itemIndex)
+											listModel.append({
+												"channelTitle" : channelTitle,
+												"channelLink" : channelLink,
+												"channelDesc" : channelDesc,
+												"channelTimestamp" : channelTimestamp,
+												"channelLang" : channelLang,
+												"itemTitle": itemTitle,
+												"itemLink": itemLink,
+												"itemDesc": itemDesc,
+												"itemTimestamp": itemTimestamp
+											});
+										}else{
+											//console.log("update item no. "+itemIndex);
+											listModel.setProperty(itemIndex, "channelTitle", channelTitle);
+											listModel.setProperty(itemIndex, "channelLink", channelLink);
+											listModel.setProperty(itemIndex, "channelDesc", channelDesc);
+											listModel.setProperty(itemIndex, "channelTimestamp", channelTimestamp);
+											listModel.setProperty(itemIndex, "channelLang", channelLang);
+											listModel.setProperty(itemIndex, "itemTitle", itemTitle);
+											listModel.setProperty(itemIndex, "itemLink", itemLink);
+											listModel.setProperty(itemIndex, "itemDesc", itemDesc);
+											listModel.setProperty(itemIndex, "itemTimestamp", itemTimestamp);
+										}
+									}catch(ex){
+										console.log("failed to parse "+channelChild);
+										console.log(ex);
+									}
+									break;
 								}
-								//console.log("     item : "+itemLink);
-								if(listModel.count<=itemIndex){
-									//console.log("append item no. "+itemIndex)
-									listModel.append({
-										"channelTitle" : channelTitle,
-										"channelLink" : channelLink,
-										"channelDesc" : channelDesc,
-										"channelTimestamp" : channelTimestamp,
-										"channelLang" : channelLang,
-										"itemTitle": itemTitle,
-										"itemLink": itemLink,
-										"itemDesc": itemDesc,
-										"itemTimestamp": itemTimestamp
-									});
-								}else{
-									//console.log("update item no. "+itemIndex);
-									listModel.setProperty(itemIndex, "channelTitle", channelTitle);
-									listModel.setProperty(itemIndex, "channelLink", channelLink);
-									listModel.setProperty(itemIndex, "channelDesc", channelDesc);
-									listModel.setProperty(itemIndex, "channelTimestamp", channelTimestamp);
-									listModel.setProperty(itemIndex, "channelLang", channelLang);
-									listModel.setProperty(itemIndex, "itemTitle", itemTitle);
-									listModel.setProperty(itemIndex, "itemLink", itemLink);
-									listModel.setProperty(itemIndex, "itemDesc", itemDesc);
-									listModel.setProperty(itemIndex, "itemTimestamp", itemTimestamp);
-								}
-								break;
-							}
-							default: {
-								console.log("unknown channel child <"+channelChild.nodeName+">");
+												default: {
+													console.log("unknown channel child <"+channelChild.nodeName+">");
+												}
 							}
 						}
 					}
@@ -527,10 +630,6 @@ Item {
 					id: feedRow
 					spacing: feedPadding
 					property string feedUrl: modelData
-					// Label {
-					// 	text: "feedUrl: " + feedUrl
-					// }
-
 
 					ListModel {
 						id: feedModel
@@ -685,19 +784,7 @@ Item {
 		anchors.centerIn: parent
 	}
 
-	Text {
-		id: errorInfo
-		text: "hu! some error occured"
-		anchors.centerIn: parent
-		anchors.fill: parent
-		clip: true
-		color: "red"
-		font.bold: true
-		font.pixelSize: 20
-		visible: false
-	}
-
-
+	
 
 }
 
