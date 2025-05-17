@@ -111,12 +111,12 @@ Item {
 	function validUrl(loc) {
 		var pattHttp = /^http(s)?:\/\/.*/;
 		if(pattHttp.test(loc,false)){
-			console.log("looks like a http(s) url : '"+loc+"'");
+			console.debug("looks like a http(s) url : '"+loc+"'");
 			return true;
 		}
 		var pattFile = /^file:\/\/.*/;
 		if(pattFile.test(loc,false)){
-			console.log("looks like a file url : '"+loc+"'");
+			console.debug("looks like a file url : '"+loc+"'");
 			return true;
 		}
 		console.log("FIXME: unknown url scheme : "+loc);
@@ -143,7 +143,7 @@ Item {
 					content : request.response
 				};
 				var date = new Date();
-				console.log(date+"--------------------------------------------------------------");
+				console.debug(date+"--------------------------------------------------------------");
 				console.log("downloaded "+url);
 				callback(response);
 			}
@@ -154,7 +154,7 @@ Item {
 	
 	function isRss(response){
 		var contentType = response.contentType.split(";")[0];
-		console.log("         contentType: "+contentType);
+		console.debug("         contentType: "+contentType);
 		switch(contentType){
 			case "application/rss+xml":{
 				return true;
@@ -167,18 +167,18 @@ Item {
 				case "rss":
 					return true;
 				default:
-					console.log("seems to be a xml, but is not a rss document : "+response.url);
+					console.debug("seems to be a xml, but is not a rss document : "+response.url);
 			}
 		}catch(ex){
-			console.log("failed to parse content like rss+xml");
-			console.log(ex);
+			console.debug("failed to parse content like rss+xml");
+			console.debug(ex);
 		}
 
 		return false;
 	}
 	function isAtom(response){
 		var contentType = response.contentType.split(";")[0];
-		console.log("         contentType: "+contentType);
+		console.debug("         contentType: "+contentType);
 		switch(contentType){
 			case "application/atom+xml":{
 				return true;
@@ -191,25 +191,25 @@ Item {
 				case "feed":
 					return true;
 				default:
-					console.log("seems to be a xml, but is not a atom document : "+response.url);
+					console.debug("seems to be a xml, but is not a atom document : "+response.url);
 			}
 		}catch(ex){
-			console.log("failed to parse content like atom+xml");
-			console.log(ex);
+			console.debug("failed to parse content like atom+xml");
+			console.debug(ex);
 		}
 		
 		return false;
 	}
 
 	function fillListModelFromFeedUrl(url,listModel) {
-		console.log( "download feedModel for "+url);
+		console.debug( "download feedModel for "+url);
 
 		busyIndicator.visible=true;
 		try{
 			sendRequest(url, function(response) {
 				let contentType = response.contentType.split(";")[0];
-				console.log("response.contentType: "+response.contentType);
-				//console.log("         contentType: "+contentType);
+				console.debug("response.contentType: "+response.contentType);
+				//console.debug("         contentType: "+contentType);
 				try{
 					if ( isRss(response) ) {
 						parseRssXml(response,listModel);
@@ -219,18 +219,18 @@ Item {
 						return;
 					}
 				}catch(ex){
-					console.log("failed to parse content by any method... sorry");
-					console.log(ex);
+					console.debug("failed to parse content by any method... sorry");
+					console.debug(ex);
 				}
 				
 				
-				console.log("unable to parse contentType "+contentType);
+				console.debug("unable to parse contentType "+contentType);
 				listModel.append({
 					"channelTitle" : "unable to parse "+url,
-					"channelLink" : "unable to parse "+url,
+					"channelLink" : url,
 					"channelDesc" : "unable to parse "+url,
-					"channelTimestamp" : "unable to parse "+url,
-					"channelLang" : "unable to parse "+url,
+					"channelTimestamp" : "?",
+					"channelLang" : "?",
 					"itemTitle": "unable to parse "+url,
 					"itemLink": "unable to parse "+url,
 					"itemDesc": "unable to parse "+url,
@@ -251,9 +251,9 @@ Item {
 	}
 
 	function parseAtomXml(response,listModel){
-		console.log("parsing atom+xml");
+		console.debug("parsing atom+xml");
 		var xmlRoot = response.request.responseXML.documentElement;
-		console.log(" xmlRoot:"+xmlRoot.nodeName);
+		console.debug(" xmlRoot:"+xmlRoot.nodeName);
 		var itemIndex=-1;
 		switch(xmlRoot.nodeName){
 			case "feed":{
@@ -271,19 +271,19 @@ Item {
 							case "rights":break;
 							case "id":
 								feedID=feedChild.childNodes[0].nodeValue;
-								console.log("  feedID : "+feedID);
+								console.debug("  feedID : "+feedID);
 								break;
 							case "title":
 								feedTitle=feedChild.childNodes[0].nodeValue;
-								console.log("  feedTitle : "+feedTitle);
+								console.debug("  feedTitle : "+feedTitle);
 								break;
 							case "updated":
 								feedTimestamp=feedChild.childNodes[0].nodeValue;
-								console.log("  feedTimestamp : "+feedTimestamp);
+								console.debug("  feedTimestamp : "+feedTimestamp);
 								break;
 							case "link":
 								feedLink=getAttributeValue(feedChild,"href");
-								console.log("  feedLink : "+feedLink);
+								console.debug("  feedLink : "+feedLink);
 								break;
 							case "entry":{
 								itemIndex++;
@@ -319,12 +319,12 @@ Item {
 												entryPublished=entryChild.childNodes[0].nodeValue;
 												break;
 											default :
-												console.log("    unknown entry child node <"+entryChild.nodeName+">");
+												console.debug("    unknown entry child node <"+entryChild.nodeName+">");
 										}
 									}
 								}
 								if(listModel.count<=itemIndex){
-									//console.log("append atom item no. "+itemIndex)
+									//console.debug("append atom item no. "+itemIndex)
 									listModel.append({
 										"channelTitle" : feedTitle,
 										"channelLink" : feedLink,
@@ -337,7 +337,7 @@ Item {
 										"itemTimestamp": entryUpdated
 									});
 								}else{
-									//console.log("update atom item no. "+itemIndex);
+									//console.debug("update atom item no. "+itemIndex);
 									listModel.setProperty(itemIndex, "channelTitle", feedTitle);
 									listModel.setProperty(itemIndex, "channelLink", feedLink);
 									listModel.setProperty(itemIndex, "channelDesc", "?");
@@ -351,26 +351,26 @@ Item {
 								break;
 							}
 										default:
-											console.log("  unknown feed child element <"+feedChild.nodeName+">");
+											console.debug("  unknown feed child element <"+feedChild.nodeName+">");
 						}
 					}
 				}
 				break;
 			}
 			default:
-				console.log("root element's nodeName != feed : <"+xmlRoot.nodeName+">");
+				console.debug("root element's nodeName != feed : <"+xmlRoot.nodeName+">");
 		}
 		var r1=itemIndex+1;
 		var r2=listModel.count-(itemIndex+1);
-		//console.log("listModel.count="+listModel.count+"; itemIndex="+itemIndex+"; r1="+r1+"; r2="+r2);
+		//console.debug("listModel.count="+listModel.count+"; itemIndex="+itemIndex+"; r1="+r1+"; r2="+r2);
 		if (r2>0) {
-			console.log("truncating listModel");
+			console.debug("truncating listModel");
 			listModel.rmeove(r1,r2);
 		}
-		console.log(" parsed "+listModel.count+" atom entries.");
+		console.debug(" parsed "+listModel.count+" atom entries.");
 
 		if(listModel.count<=0){
-			console.log("no entries found. appending errors message as feedItem");
+			console.debug("no entries found. appending errors message as feedItem");
 			listModel.append({
 				"channelTitle" : feedTitle,
 				"channelLink" : feedLink,
@@ -386,10 +386,10 @@ Item {
 	}
 
 	function parseRssXml(response,listModel){
-		console.log("parsing rss+xml");
-		//console.log(response.content);
+		console.debug("parsing rss+xml");
+		//console.debug(response.content);
 		var xmlRoot = response.request.responseXML.documentElement;
-		console.log(" xmlRoot:"+xmlRoot.nodeName);
+		console.debug(" xmlRoot:"+xmlRoot.nodeName);
 		//crawl channels...
 		var itemIndex=-1;
 		for(var channelIndex = 0 ; channelIndex < xmlRoot.childNodes.length ; channelIndex++){
@@ -401,7 +401,7 @@ Item {
 					var channelDesc = "?";
 					var channelTimestamp = "?";
 					var channelLang = "?";
-					console.log("  parsing channel elem "+channelIndex);
+					console.debug("  parsing channel elem "+channelIndex);
 					for (var channelChildIndex = 0 ; channelChildIndex < channelElem.childNodes.length ; channelChildIndex++) {
 						var channelChild = channelElem.childNodes[channelChildIndex];
 						if(channelChild!=null){
@@ -420,41 +420,41 @@ Item {
 								case "title":
 									try{
 										channelTitle=channelChild.childNodes[0].nodeValue;
-										console.log("   channelTitle : "+channelTitle);
+										console.debug("   channelTitle : "+channelTitle);
 									}catch(ex){
-										console.log(ex);
+										console.debug(ex);
 									}
 									break;
 								case "link":
 									try{
 										channelLink=channelChild.childNodes[0].nodeValue;
-										console.log("   channelLink : "+channelLink);
+										console.debug("   channelLink : "+channelLink);
 									}catch(ex){
-										console.log(ex);
+										console.debug(ex);
 									}
 									break;
 								case "description":
 									try{
 										channelDesc=channelChild.childNodes[0].nodeValue;
-										console.log("   channelDesc : "+channelDesc);
+										console.debug("   channelDesc : "+channelDesc);
 									}catch(ex){
-										console.log(ex);
+										console.debug(ex);
 									}
 									break;
 								case "lastBuildDate":
 									try{
 										channelTimestamp=channelChild.childNodes[0].nodeValue;
-										console.log("   channelTimestamp : "+channelTimestamp);
+										console.debug("   channelTimestamp : "+channelTimestamp);
 									}catch(ex){
-										console.log(ex);
+										console.debug(ex);
 									}
 									break;
 								case "language":
 									try{
 										channelLang=channelChild.childNodes[0].nodeValue;
-										console.log("   channelLang : "+channelLang);
+										console.debug("   channelLang : "+channelLang);
 									}catch(ex){
-										console.log(ex);
+										console.debug(ex);
 									}
 									break;
 								case "item":{
@@ -489,13 +489,13 @@ Item {
 														itemTimestamp=itemChild.childNodes[0].nodeValue;
 														break;
 													default:
-														console.log("    unknown itemChild <"+itemChild.nodeName+">");
+														console.debug("    unknown itemChild <"+itemChild.nodeName+">");
 												}
 											}
 										}
-										//console.log("     item : "+itemLink);
+										//console.debug("     item : "+itemLink);
 										if(listModel.count<=itemIndex){
-											//console.log("append item no. "+itemIndex)
+											//console.debug("append item no. "+itemIndex)
 											listModel.append({
 												"channelTitle" : channelTitle,
 												"channelLink" : channelLink,
@@ -508,7 +508,7 @@ Item {
 												"itemTimestamp": itemTimestamp
 											});
 										}else{
-											//console.log("update item no. "+itemIndex);
+											//console.debug("update item no. "+itemIndex);
 											listModel.setProperty(itemIndex, "channelTitle", channelTitle);
 											listModel.setProperty(itemIndex, "channelLink", channelLink);
 											listModel.setProperty(itemIndex, "channelDesc", channelDesc);
@@ -520,14 +520,14 @@ Item {
 											listModel.setProperty(itemIndex, "itemTimestamp", itemTimestamp);
 										}
 									}catch(ex){
-										console.log("failed to parse "+channelChild);
-										console.log(ex);
+										console.debug("failed to parse "+channelChild);
+										console.debug(ex);
 									}
 									break;
 								}
-												default: {
-													console.log("unknown channel child <"+channelChild.nodeName+">");
-												}
+								default: {
+									console.debug("unknown channel child <"+channelChild.nodeName+">");
+								}
 							}
 						}
 					}
@@ -535,21 +535,21 @@ Item {
 				}
 				case "#text":break;
 				default:{
-					console.log("expected childElement <channel> but got <"+channelElem.nodeName+">");
+					console.debug("expected childElement <channel> but got <"+channelElem.nodeName+">");
 				}
 			}
 		}
 		var r1=itemIndex+1;
 		var r2=listModel.count-(itemIndex+1);
-		//console.log("listModel.count="+listModel.count+"; itemIndex="+itemIndex+"; r1="+r1+"; r2="+r2);
+		//console.debug("listModel.count="+listModel.count+"; itemIndex="+itemIndex+"; r1="+r1+"; r2="+r2);
 		if (r2>0) {
-			console.log("truncating listModel");
+			console.debug("truncating listModel");
 			listModel.rmeove(r1,r2);
 		}
-		console.log(" parsed "+listModel.count+" rss items.");
+		console.debug(" parsed "+listModel.count+" rss items.");
 
 		if(listModel.count<=0){
-			console.log("no entries found. appending errors message as feedItem");
+			console.debug("no entries found. appending errors message as feedItem");
 			listModel.append({
 				"channelTitle" : channelTitle,
 				"channelLink" : channelLink,
@@ -566,7 +566,7 @@ Item {
 
 
 	function openUrl(url){
-		console.log("about to open url '"+url+"'");
+		console.debug("about to open url '"+url+"'");
 		Qt.openUrlExternally(url); //unable to use a custom cmd...
 		//this will block. if browsercmd will not return, you cannot open another link :-( //executable.exec("'"+browsercmd+"' '"+url+"'");
 	}
@@ -594,7 +594,7 @@ Item {
 			//console.debug("flick from "+rssFlickable.contentX+" by "+(flickWidth*flickDirection) +" end:"+rssFlickable.atXEnd )
 			if( (rssFlickable.atXEnd && flickDirection<=0) || (rssFlickable.atXBeginning && flickDirection>0) ){
 				flickDirection = flickDirection * -1
-			//	console.log("flipping flick direction")
+			//	console.debug("flipping flick direction")
 			}
 
 		}
@@ -642,7 +642,7 @@ Item {
 						running: true
 						repeat: true
 						onTriggered: {
-							console.log("reload triggered after "+refreshInterval+"ms for url '"+feedUrl+"'")
+							console.debug("reload triggered after "+refreshInterval+"ms for url '"+feedUrl+"'")
 							//feedModel.clear()
 							fillListModelFromFeedUrl(feedUrl,feedModel)
 						}
@@ -767,7 +767,7 @@ Item {
 		WheelHandler {
 			//property: "rotation"
 			onWheel: (event)=> {
-				//console.log("rotation", event.angleDelta.y, "scaled", rotation, "@", point.position, "=>", parent.rotation)
+				//console.debug("rotation", event.angleDelta.y, "scaled", rotation, "@", point.position, "=>", parent.rotation)
 				rssFlickable.flick(event.angleDelta.y*10,0)
 				if (event.angleDelta.y >=0){
 					flickDirection=1
